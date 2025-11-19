@@ -22,3 +22,5 @@ temp/
 # Sensitive files (example)
 config.ini
 credentials.json
+
+db.sqlite3
