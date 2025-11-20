@@ -1,5 +1,8 @@
 import type { Route } from "./+types/home";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
+import { useState } from "react";
+import type { TripFormData } from "~/services/api";
+import TripForm from "~/components/TripForm";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -14,6 +17,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [showTripForm, setShowTripForm] = useState(false);
 
   const exampleTrips = [
     {
@@ -50,7 +54,7 @@ export default function HomePage() {
       title: "Create New Trip",
       description: "Plan a new route and generate compliant ELD logs",
       icon: "🗺️",
-      action: () => navigate("/trips/calculate"),
+      action: () => setShowTripForm(true),
       color: "primary",
     },
     {
@@ -69,8 +73,44 @@ export default function HomePage() {
     },
   ];
 
+  const handleTripFormSubmit = (formData: TripFormData) => {
+    // Convert form data to URL parameters
+    const params = new URLSearchParams({
+      current_location: formData.currentLocation,
+      pickup_location: formData.pickupLocation,
+      dropoff_location: formData.dropoffLocation,
+      current_cycle_used: formData.currentCycleUsed.toString(),
+    });
+
+    // Navigate to calculate screen with parameters
+    navigate("/trips/calculate", {
+      state: { formData },
+      replace: true,
+    });
+    setShowTripForm(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowTripForm(false);
+  };
+
   return (
     <div className="home-page">
+      {/* Modal for TripForm */}
+      {showTripForm && (
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Plan Your Trip</h3>
+              <button className="modal-close" onClick={handleCloseModal}>
+                ×
+              </button>
+            </div>
+            <TripForm onSubmit={handleTripFormSubmit} />
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <section className="hero-section">
         <h2>Professional ELD Log Generation</h2>
@@ -79,9 +119,12 @@ export default function HomePage() {
           modern, intuitive platform designed for professional truck drivers.
         </p>
         <div className="cta-buttons">
-          <Link to="/trips/calculate" className="btn btn-primary btn-lg">
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => setShowTripForm(true)}
+          >
             🚛 Start New Trip
-          </Link>
+          </button>
           <button className="btn btn-secondary btn-lg">
             📖 Learn HOS Rules
           </button>
@@ -134,9 +177,12 @@ export default function HomePage() {
           ) : (
             <div className="empty-state">
               <p>No recent trips found</p>
-              <Link to="/trips/calculate" className="btn btn-primary">
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowTripForm(true)}
+              >
                 Create Your First Trip
-              </Link>
+              </button>
             </div>
           )}
         </div>
