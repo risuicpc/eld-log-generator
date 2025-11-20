@@ -33,34 +33,34 @@ const TripSummary: React.FC<TripSummaryProps> = ({
   return (
     <div className="trip-summary">
       <div className="summary-header">
-        <h3>Trip Summary</h3>
+        <h3>📊 Trip Summary</h3>
         <div className="trip-overview">
           <div className="overview-item">
             <span className="overview-label">Total Distance</span>
             <span className="overview-value">
-              {Math.round(totalDistance)} miles
+              {Math.round(totalDistance)} mi
             </span>
           </div>
           <div className="overview-item">
             <span className="overview-label">Total Duration</span>
             <span className="overview-value">
-              {formatDurationHours(totalDrivingHours)} driving
+              {formatDurationHours(totalDrivingHours)}
             </span>
           </div>
           <div className="overview-item">
             <span className="overview-label">Trip Days</span>
-            <span className="overview-value">{dailySchedules.length} days</span>
+            <span className="overview-value">{dailySchedules.length}</span>
           </div>
           <div className="overview-item">
             <span className="overview-label">Driving Days</span>
-            <span className="overview-value">{drivingDays} days</span>
+            <span className="overview-value">{drivingDays}</span>
           </div>
         </div>
       </div>
 
       <div className="summary-content">
         <div className="route-summary">
-          <h4>Route Information</h4>
+          <h4>📍 Route Information</h4>
           <div className="route-details">
             <div className="route-item">
               <strong>From:</strong> {trip.current_location}
@@ -99,7 +99,7 @@ const TripSummary: React.FC<TripSummaryProps> = ({
         </div>
 
         <div className="daily-schedules">
-          <h4>Daily Schedule</h4>
+          <h4>📅 Daily Schedule</h4>
           <div className="schedule-list">
             {dailySchedules.map((schedule, index) => (
               <div
@@ -110,7 +110,7 @@ const TripSummary: React.FC<TripSummaryProps> = ({
                   <span className="day-number">Day {schedule.day_number}</span>
                   <span className="day-date">{formatDate(schedule.date)}</span>
                   {schedule.is_restart_day && (
-                    <span className="restart-badge">34-Hour Restart</span>
+                    <span className="restart-badge">🔄 34-Hour Restart</span>
                   )}
                 </div>
 
@@ -118,19 +118,19 @@ const TripSummary: React.FC<TripSummaryProps> = ({
                   <div className="day-details">
                     <div className="day-stats">
                       <span className="stat">
-                        <strong>Driving:</strong>{" "}
+                        <strong>🚛 Driving:</strong>{" "}
                         {schedule.total_driving_hours.toFixed(1)}h
                       </span>
                       <span className="stat">
-                        <strong>On Duty:</strong>{" "}
+                        <strong>💼 On Duty:</strong>{" "}
                         {schedule.total_on_duty_hours.toFixed(1)}h
                       </span>
                       <span className="stat">
-                        <strong>Distance:</strong>{" "}
+                        <strong>📏 Distance:</strong>{" "}
                         {Math.round(schedule.estimated_distance)} mi
                       </span>
                       <span className="stat">
-                        <strong>Breaks:</strong> {schedule.breaks_needed}
+                        <strong>☕ Breaks:</strong> {schedule.breaks_needed}
                       </span>
                     </div>
 
@@ -176,7 +176,7 @@ const TripSummary: React.FC<TripSummaryProps> = ({
 
         {hasRestartDay && (
           <div className="restart-notice summary-notice">
-            <h5>34-Hour Restart Included</h5>
+            <h5>🔄 34-Hour Restart Included</h5>
             <p>
               This trip includes a 34-hour restart period to comply with the
               70-hour/8-day cycle limit. The restart resets your available
@@ -186,23 +186,23 @@ const TripSummary: React.FC<TripSummaryProps> = ({
         )}
 
         <div className="hos-summary">
-          <h4>HOS Compliance Summary</h4>
+          <h4>✅ HOS Compliance Summary</h4>
           <div className="compliance-grid">
             <div className="compliance-item compliant">
               <span className="compliance-label">Daily Driving Limit</span>
-              <span className="compliance-value">≤ 11 hours ✓</span>
+              <span className="compliance-value">≤ 11 hours ✅</span>
             </div>
             <div className="compliance-item compliant">
               <span className="compliance-label">Duty Window</span>
-              <span className="compliance-value">≤ 14 hours ✓</span>
+              <span className="compliance-value">≤ 14 hours ✅</span>
             </div>
             <div className="compliance-item compliant">
               <span className="compliance-label">70-Hour Cycle</span>
-              <span className="compliance-value">Compliant ✓</span>
+              <span className="compliance-value">Compliant ✅</span>
             </div>
             <div className="compliance-item compliant">
               <span className="compliance-label">30-Minute Breaks</span>
-              <span className="compliance-value">Included ✓</span>
+              <span className="compliance-value">Included ✅</span>
             </div>
           </div>
         </div>

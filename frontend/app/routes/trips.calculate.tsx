@@ -1,13 +1,13 @@
 import type { Route } from "./+types/trips.calculate";
-import { useLocation, useNavigation } from "react-router";
+import { useLocation, useNavigation, Link } from "react-router";
 import { useState, useEffect } from "react";
-import LoadingSpinner from "~/components/LoadingSpinner";
-import ErrorMessage from "~/components/ErrorMessage";
-import RouteMap from "~/components/RouteMap";
-import ELDLog from "~/components/ELDLog";
-import TripSummary from "~/components/TripSummary";
-import HosCompliance from "~/components/HosCompliance";
-import { calculateTrip } from "~/services/api";
+import { calculateTrip } from "../services/api";
+import TripSummary from "../components/TripSummary";
+import RouteMap from "../components/RouteMap";
+import HosCompliance from "../components/HosCompliance";
+import ELDLog from "../components/ELDLog";
+import ErrorMessage from "../components/ErrorMessage";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Calculate Trip - ELD Log Generator" }];
@@ -82,24 +82,44 @@ export default function TripCalculatePage() {
   }
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="trip-calculate-page">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    return (
+      <div className="trip-calculate-page">
+        <ErrorMessage
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
   }
 
   if (!tripData) {
-    return <ErrorMessage message="No trip data available" />;
+    return (
+      <div className="trip-calculate-page">
+        <ErrorMessage message="No trip data available" />
+      </div>
+    );
   }
 
   return (
     <div className="trip-calculate-page">
       <div className="results-header">
-        <h2>Trip Results</h2>
-        <button onClick={() => window.history.back()} className="btn-secondary">
-          Calculate New Trip
-        </button>
+        <div>
+          <h2>Trip Results</h2>
+          <p className="text-gray-600">
+            {tripData.trip.current_location} → {tripData.trip.dropoff_location}
+          </p>
+        </div>
+        <Link to="/" className="btn btn-secondary">
+          ← New Trip
+        </Link>
       </div>
 
       <div className="tabs">
@@ -107,25 +127,25 @@ export default function TripCalculatePage() {
           className={`tab ${activeTab === "summary" ? "active" : ""}`}
           onClick={() => setActiveTab("summary")}
         >
-          Summary
+          📊 Summary
         </button>
         <button
           className={`tab ${activeTab === "map" ? "active" : ""}`}
           onClick={() => setActiveTab("map")}
         >
-          Route Map
+          🗺️ Route Map
         </button>
         <button
           className={`tab ${activeTab === "compliance" ? "active" : ""}`}
           onClick={() => setActiveTab("compliance")}
         >
-          HOS Compliance
+          ✅ HOS Compliance
         </button>
         <button
           className={`tab ${activeTab === "logs" ? "active" : ""}`}
           onClick={() => setActiveTab("logs")}
         >
-          ELD Logs ({tripData.daily_schedules.length})
+          📋 ELD Logs ({tripData.daily_schedules.length})
         </button>
       </div>
 

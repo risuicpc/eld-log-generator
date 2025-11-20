@@ -11,10 +11,10 @@ const api = axios.create({
 });
 
 export interface TripFormData {
-  current_location: string;
-  pickup_location: string;
-  dropoff_location: string;
-  current_cycle_used: number;
+  currentLocation: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  currentCycleUsed: number;
 }
 
 export interface TripData {

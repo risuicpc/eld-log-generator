@@ -7,10 +7,10 @@ interface TripFormProps {
 
 const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState<TripFormData>({
-    current_location: "",
-    pickup_location: "",
-    dropoff_location: "",
-    current_cycle_used: 0,
+    currentLocation: "",
+    pickupLocation: "",
+    dropoffLocation: "",
+    currentCycleUsed: 0,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -20,19 +20,19 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
 
     // Basic validation
     const newErrors: Record<string, string> = {};
-    if (!formData.current_location.trim()) {
-      newErrors.current_location = "Current location is required";
+    if (!formData.currentLocation.trim()) {
+      newErrors.currentLocation = "Current location is required";
     }
-    if (!formData.pickup_location.trim()) {
-      newErrors.pickup_location = "Pickup location is required";
+    if (!formData.pickupLocation.trim()) {
+      newErrors.pickupLocation = "Pickup location is required";
     }
-    if (!formData.dropoff_location.trim()) {
-      newErrors.dropoff_location = "Dropoff location is required";
+    if (!formData.dropoffLocation.trim()) {
+      newErrors.dropoffLocation = "Dropoff location is required";
     }
 
-    const cycleUsed = formData.current_cycle_used;
+    const cycleUsed = formData.currentCycleUsed;
     if (isNaN(cycleUsed) || cycleUsed < 0 || cycleUsed > 70) {
-      newErrors.current_cycle_used = "Must be between 0 and 70 hours";
+      newErrors.currentCycleUsed = "Must be between 0 and 70 hours";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -62,24 +62,24 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
   const exampleTrips = [
     {
       label: "New York to Chicago",
-      current_location: "New York, NY",
-      pickup_location: "New York, NY",
-      dropoff_location: "Chicago, IL",
-      current_cycle_used: 0,
+      currentLocation: "New York, NY",
+      pickupLocation: "New York, NY",
+      dropoffLocation: "Chicago, IL",
+      currentCycleUsed: 0,
     },
     {
       label: "Chicago to Los Angeles",
-      current_location: "Chicago, IL",
-      pickup_location: "Chicago, IL",
-      dropoff_location: "Los Angeles, CA",
-      current_cycle_used: 45,
+      currentLocation: "Chicago, IL",
+      pickupLocation: "Chicago, IL",
+      dropoffLocation: "Los Angeles, CA",
+      currentCycleUsed: 45,
     },
     {
       label: "Regional Trip",
-      current_location: "Philadelphia, PA",
-      pickup_location: "Philadelphia, PA",
-      dropoff_location: "Boston, MA",
-      current_cycle_used: 30,
+      currentLocation: "Philadelphia, PA",
+      pickupLocation: "Philadelphia, PA",
+      dropoffLocation: "Boston, MA",
+      currentCycleUsed: 30,
     },
   ];
 
@@ -96,7 +96,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
       </div>
 
       <div className="example-trips">
-        <h3>Quick Examples:</h3>
+        <h3>🚀 Quick Examples</h3>
         <div className="example-buttons">
           {exampleTrips.map((example, index) => (
             <button
@@ -113,86 +113,83 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
 
       <form onSubmit={handleSubmit} className="trip-form">
         <div className="form-group">
-          <label htmlFor="current_location">Current Location *</label>
+          <label htmlFor="currentLocation">📍 Current Location *</label>
           <input
-            id="current_location"
+            id="currentLocation"
             type="text"
-            value={formData.current_location}
-            onChange={(e) => handleChange("current_location", e.target.value)}
+            value={formData.currentLocation}
+            onChange={(e) => handleChange("currentLocation", e.target.value)}
             placeholder="e.g., New York, NY"
-            className={errors.current_location ? "error" : ""}
+            className={errors.currentLocation ? "error" : ""}
           />
-          {errors.current_location && (
-            <span className="error-message">{errors.current_location}</span>
+          {errors.currentLocation && (
+            <span className="error-message">{errors.currentLocation}</span>
           )}
         </div>
 
         <div className="form-group">
-          <label htmlFor="pickup_location">Pickup Location *</label>
+          <label htmlFor="pickupLocation">📦 Pickup Location *</label>
           <input
-            id="pickup_location"
+            id="pickupLocation"
             type="text"
-            value={formData.pickup_location}
-            onChange={(e) => handleChange("pickup_location", e.target.value)}
+            value={formData.pickupLocation}
+            onChange={(e) => handleChange("pickupLocation", e.target.value)}
             placeholder="e.g., Chicago, IL"
-            className={errors.pickup_location ? "error" : ""}
+            className={errors.pickupLocation ? "error" : ""}
           />
-          {errors.pickup_location && (
-            <span className="error-message">{errors.pickup_location}</span>
+          {errors.pickupLocation && (
+            <span className="error-message">{errors.pickupLocation}</span>
           )}
         </div>
 
         <div className="form-group">
-          <label htmlFor="dropoff_location">Dropoff Location *</label>
+          <label htmlFor="dropoffLocation">🎯 Dropoff Location *</label>
           <input
-            id="dropoff_location"
+            id="dropoffLocation"
             type="text"
-            value={formData.dropoff_location}
-            onChange={(e) => handleChange("dropoff_location", e.target.value)}
+            value={formData.dropoffLocation}
+            onChange={(e) => handleChange("dropoffLocation", e.target.value)}
             placeholder="e.g., Los Angeles, CA"
-            className={errors.dropoff_location ? "error" : ""}
+            className={errors.dropoffLocation ? "error" : ""}
           />
-          {errors.dropoff_location && (
-            <span className="error-message">{errors.dropoff_location}</span>
+          {errors.dropoffLocation && (
+            <span className="error-message">{errors.dropoffLocation}</span>
           )}
         </div>
 
         <div className="form-group">
-          <label htmlFor="current_cycle_used">
-            Current Cycle Used (Hours) *
+          <label htmlFor="currentCycleUsed">
+            ⏰ Current Cycle Used (Hours) *
             <span className="label-note"> - 70-hour/8-day limit</span>
           </label>
           <input
-            id="current_cycle_used"
+            id="currentCycleUsed"
             type="number"
             step="0.1"
             min="0"
             max="70"
-            value={formData.current_cycle_used}
+            value={formData.currentCycleUsed}
             onChange={(e) =>
-              handleChange(
-                "current_cycle_used",
-                parseFloat(e.target.value) || 0
-              )
+              handleChange("currentCycleUsed", parseFloat(e.target.value) || 0)
             }
             placeholder="0"
-            className={errors.current_cycle_used ? "error" : ""}
+            className={errors.currentCycleUsed ? "error" : ""}
           />
-          {errors.current_cycle_used && (
-            <span className="error-message">{errors.current_cycle_used}</span>
+          {errors.currentCycleUsed && (
+            <span className="error-message">{errors.currentCycleUsed}</span>
           )}
           <div className="input-help">
             Enter hours used in current 8-day cycle (0-70 hours)
           </div>
         </div>
 
-        <button type="submit" className="btn-primary">
-          Generate ELD Logs
+        <button type="submit" className="btn btn-primary btn-lg">
+          🚛 Generate ELD Logs
         </button>
       </form>
 
       <div className="form-info">
-        <h4>About This Tool</h4>
+        <h4>💡 About This Tool</h4>
         <ul>
           <li>Calculates routes and driving time automatically</li>
           <li>Generates FMCSA-compliant ELD logs</li>
