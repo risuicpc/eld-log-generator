@@ -5,4 +5,19 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  server: {
+    port: 3000,
+  },
+  resolve: {
+    alias: {
+      "@": "/app",
+    },
+  },
+
+  optimizeDeps: {
+    include: ["leaflet", "react-leaflet"],
+  },
+  ssr: {
+    noExternal: ["leaflet"],
+  },
 });
