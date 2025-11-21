@@ -17,6 +17,13 @@ export interface TripFormData {
   currentCycleUsed: number;
 }
 
+export interface FormData {
+  current_location: string;
+  pickup_location: string;
+  dropoff_location: string;
+  current_cycle_used: string;
+}
+
 export interface TripData {
   trip: any;
   route: any;
@@ -25,16 +32,13 @@ export interface TripData {
   total_days: number;
 }
 
-export const calculateTrip = async (
-  tripData: TripFormData
-): Promise<TripData> => {
+export const calculateTrip = async (tripData: FormData): Promise<TripData> => {
   try {
-    console.log("Sending trip data to API:", tripData);
     const response = await api.post("/trips/calculate/", tripData);
     return response.data;
   } catch (error: any) {
     console.log("API error:", error);
-    if (error.response) { 
+    if (error.response) {
       throw new Error(error.response.data.error || "Failed to calculate trip");
     } else if (error.request) {
       throw new Error(
@@ -43,6 +47,15 @@ export const calculateTrip = async (
     } else {
       throw new Error("An unexpected error occurred");
     }
+  }
+};
+
+export const getTrips = async (): Promise<any> => {
+  try {
+    const response = await api.get("/trips/");
+    return response.data;
+  } catch (error: any) {
+    throw new Error("Failed to fetch HOS limits");
   }
 };
 
@@ -61,21 +74,6 @@ export const getHOSLimits = async (): Promise<any> => {
     return response.data;
   } catch (error: any) {
     throw new Error("Failed to fetch HOS limits");
-  }
-};
-
-export const checkHOSCompliance = async (
-  currentCycleUsed: number,
-  additionalHours: number = 0
-): Promise<any> => {
-  try {
-    const response = await api.post("/hos-rules/check_compliance/", {
-      current_cycle_used: currentCycleUsed,
-      additional_hours: additionalHours,
-    });
-    return response.data;
-  } catch (error: any) {
-    throw new Error("Failed to check HOS compliance");
   }
 };
 

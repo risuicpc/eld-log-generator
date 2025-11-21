@@ -7,6 +7,7 @@ from datetime import datetime
 from .models import Trip, DailyLog, DutyStatus
 from .serializers import (
     TripSerializer,
+    TripListSerializer,
     TripCalculationSerializer,
     TripCalculationResponseSerializer
 )
@@ -18,6 +19,11 @@ from .hos_rules import HOSRules
 class TripViewSet(viewsets.ModelViewSet):
     queryset = Trip.objects.all()
     serializer_class = TripSerializer
+
+    def get_serializer(self, *args, **kwargs):
+        if self.action == 'list':
+            return TripListSerializer(*args, **kwargs)
+        return super().get_serializer(*args, **kwargs)
 
     @action(detail=False, methods=['post'])
     def calculate(self, request):

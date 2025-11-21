@@ -47,8 +47,26 @@ export const getHourRange = (startTime: string, endTime: string): number[] => {
   return hours;
 };
 
-export const calculateTotalHours = (activities: any[], status: string): number => {
+export const calculateTotalHours = (
+  activities: any[],
+  status: string
+): number => {
   return activities
-    .filter(activity => activity.status === status)
-    .reduce((total: number, activity: any) => total + activity.duration_hours, 0);
+    .filter((activity) => activity.status === status)
+    .reduce(
+      (total: number, activity: any) => total + activity.duration_hours,
+      0
+    );
+};
+
+export const formatDuration = (hours: number): string => {
+  const wholeHours = Math.floor(hours);
+  const minutes = Math.round((hours - wholeHours) * 60);
+  return `${wholeHours}h ${minutes}m`;
+};
+
+export const getStatusBadgeClass = (status: "compliant" | "violation") => {
+  return status === "compliant"
+    ? "status-badge compliant"
+    : "status-badge violation";
 };

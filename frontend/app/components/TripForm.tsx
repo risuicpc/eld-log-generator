@@ -3,9 +3,10 @@ import type { TripFormData } from "~/services/api";
 
 interface TripFormProps {
   onSubmit: (data: TripFormData) => void;
+  posting?: boolean;
 }
 
-const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
+const TripForm: React.FC<TripFormProps> = ({ onSubmit, posting }) => {
   const [formData, setFormData] = useState<TripFormData>({
     currentLocation: "",
     pickupLocation: "",
@@ -185,6 +186,7 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit }) => {
 
         <button type="submit" className="btn btn-primary btn-lg">
           🚛 Generate ELD Logs
+          {posting && <div className="loading"></div>}
         </button>
       </form>
 

@@ -24,6 +24,13 @@ class TripSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class TripListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Trip
+        fields = '__all__'
+
+
 class TripCalculationSerializer(serializers.Serializer):
     current_location = serializers.CharField(max_length=255)
     pickup_location = serializers.CharField(max_length=255)

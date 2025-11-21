@@ -1,50 +1,24 @@
-import type { Route } from "./+types/trips.calculate";
-import { useLocation, useNavigation, Link } from "react-router";
-import { useState, useEffect } from "react";
-import { calculateTrip } from "../services/api";
-import TripSummary from "../components/TripSummary";
-import RouteMap from "../components/RouteMap";
-import HosCompliance from "../components/HosCompliance";
+import { useState } from "react";
+import { Link, useLocation, useNavigation } from "react-router";
 import ELDLog from "../components/ELDLog";
 import ErrorMessage from "../components/ErrorMessage";
+import HosCompliance from "../components/HosCompliance";
 import LoadingSpinner from "../components/LoadingSpinner";
+import RouteMap from "../components/RouteMap";
+import TripSummary from "../components/TripSummary";
+import type { Route } from "./+types/trips.calculate";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Calculate Trip - ELD Log Generator" }];
 }
 
-export async function clientLoader({ request }: { request: Request }) {
-  const url = new URL(request.url);
-  const formData = Object.fromEntries(url.searchParams);
-  return { formData };
-}
-
-clientLoader.hydrate = true;
-
 export default function TripCalculatePage() {
   const location = useLocation();
   const navigation = useNavigation();
-  const [tripData, setTripData] = useState<any>(null);
+  const [tripData] = useState<any>(location.state?.tripData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("summary");
-
-  useEffect(() => {
-    const calculateTripData = async () => {
-      try {
-        setLoading(true);
-        const formData = location.state?.formData || {};
-        const result = await calculateTrip(formData);
-        setTripData(result);
-      } catch (err: any) {
-        setError(err.message || "Failed to calculate trip");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    calculateTripData();
-  }, [location.state]);
 
   const handlePrintLog = (logIndex: number) => {
     const element = document.getElementById(`eld-log-${logIndex}`);
@@ -81,7 +55,7 @@ export default function TripCalculatePage() {
     return <LoadingSpinner />;
   }
 
-  if (loading) {
+  if (!tripData) {
     return (
       <div className="trip-calculate-page">
         <LoadingSpinner />

@@ -1,7 +1,15 @@
-import type { Route } from "./+types/trips.$id";
-import { useLoaderData, Link, Outlet, useParams } from "react-router";
+import { useCallback, useMemo, useState } from "react";
+import { Link, useLoaderData, useParams } from "react-router";
+import ErrorMessage from "~/components/ErrorMessage";
+import LoadingSpinner from "~/components/LoadingSpinner";
+import { ComplianceTab, OverviewTab, RouteTab } from "~/components/Tab";
+import {
+  calculateCompliance,
+  calculateRouteStats,
+} from "~/utils/hosCalculations";
 import { getTripLogs } from "../services/api";
-import { useState } from "react";
+import type { TripData } from "../types/trip";
+import type { Route } from "./+types/trips.$id";
 
 export function meta({ params }: Route.MetaArgs) {
   return [{ title: `Trip ${params.id} - ELD Log Generator` }];
@@ -10,38 +18,64 @@ export function meta({ params }: Route.MetaArgs) {
 export async function clientLoader({ params }: { params: { id: string } }) {
   try {
     const tripData = await getTripLogs(params.id);
+    if (!tripData) {
+      throw new Response("Trip Not Found", {
+        status: 404,
+        statusText: `Trip ${params.id} could not be found`,
+      });
+    }
     return { tripData };
   } catch (error) {
-    throw new Error(`Failed to load trip: ${params.id}`);
+    console.error("Failed to load trip:", error);
+    if (error instanceof Response) {
+      throw error;
+    }
+    throw new Response("Failed to load trip", {
+      status: 500,
+      statusText: `Failed to load trip: ${params.id}`,
+    });
   }
 }
 
 clientLoader.hydrate = true;
 
+// Main Component
 export default function TripDetailPage() {
-  const { tripData } = useLoaderData() as { tripData: any };
+  const { tripData } = useLoaderData() as { tripData: TripData };
   const params = useParams();
   const [activeTab, setActiveTab] = useState("overview");
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (!tripData) {
-    return (
-      <div className="trip-detail-page">
-        <div className="error-message-container">
-          <div className="error-icon">⚠️</div>
-          <h3>Trip Not Found</h3>
-          <p>The requested trip could not be found.</p>
-          <Link to="/" className="btn btn-primary">
-            ← Back to Home
-          </Link>
-        </div>
-      </div>
-    );
+  const setActiveTabHandler = useCallback((tab: string) => {
+    setActiveTab(tab);
+  }, []);
+
+  // Calculate derived data
+  const { compliance, routeStats, trip } = useMemo(() => {
+    if (!tripData) {
+      return { compliance: null, routeStats: null, trip: null };
+    }
+
+    const trip = tripData.trip || tripData;
+    const compliance = calculateCompliance(tripData.daily_logs || []);
+    const routeStats = calculateRouteStats(tripData.daily_logs || [], trip);
+
+    return { compliance, routeStats, trip };
+  }, [tripData]);
+
+  // Loading state
+  if (isLoading) {
+    return <LoadingSpinner message="Loading trip details..." />;
   }
 
-  const trip = tripData.trip || tripData;
+  // Error state
+  if (!tripData || !trip) {
+    return <ErrorMessage message="The requested trip could not be found." />;
+  }
 
   return (
     <div className="trip-detail-page">
+      {/* Header */}
       <div className="trip-header">
         <div>
           <h2>📋 Trip Details</h2>
@@ -52,6 +86,7 @@ export default function TripDetailPage() {
         </Link>
       </div>
 
+      {/* Trip Info Card */}
       <div className="trip-info-card">
         <div className="info-grid">
           <div className="info-item">
@@ -93,6 +128,7 @@ export default function TripDetailPage() {
         </div>
       </div>
 
+      {/* Action Buttons */}
       <div className="trip-actions">
         <div className="action-buttons">
           <Link to={`/trips/${params.id}/logs`} className="btn btn-primary">
@@ -103,190 +139,75 @@ export default function TripDetailPage() {
         </div>
       </div>
 
-      <div className="tabs">
+      {/* Tabs */}
+      <div className="tabs" role="tablist">
         <button
           className={`tab ${activeTab === "overview" ? "active" : ""}`}
-          onClick={() => setActiveTab("overview")}
+          onClick={() => setActiveTabHandler("overview")}
+          role="tab"
+          aria-selected={activeTab === "overview"}
+          aria-controls="overview-panel"
         >
           📊 Overview
         </button>
         <button
           className={`tab ${activeTab === "route" ? "active" : ""}`}
-          onClick={() => setActiveTab("route")}
+          onClick={() => setActiveTabHandler("route")}
+          role="tab"
+          aria-selected={activeTab === "route"}
+          aria-controls="route-panel"
         >
           🗺️ Route Details
         </button>
         <button
           className={`tab ${activeTab === "compliance" ? "active" : ""}`}
-          onClick={() => setActiveTab("compliance")}
+          onClick={() => setActiveTabHandler("compliance")}
+          role="tab"
+          aria-selected={activeTab === "compliance"}
+          aria-controls="compliance-panel"
         >
           ✅ Compliance
         </button>
       </div>
 
+      {/* Tab Content */}
       <div className="tab-content">
-        {activeTab === "overview" && (
-          <div className="overview-content">
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon">📅</div>
-                <div className="stat-content">
-                  <span className="stat-value">
-                    {tripData.daily_logs?.length || 0}
-                  </span>
-                  <span className="stat-label">Total Days</span>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">🚛</div>
-                <div className="stat-content">
-                  <span className="stat-value">
-                    {tripData.daily_logs
-                      ?.reduce(
-                        (sum: number, log: any) =>
-                          sum + log.total_driving_hours,
-                        0
-                      )
-                      .toFixed(1)}
-                    h
-                  </span>
-                  <span className="stat-label">Total Driving</span>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">💼</div>
-                <div className="stat-content">
-                  <span className="stat-value">
-                    {tripData.daily_logs
-                      ?.reduce(
-                        (sum: number, log: any) =>
-                          sum + log.total_on_duty_hours,
-                        0
-                      )
-                      .toFixed(1)}
-                    h
-                  </span>
-                  <span className="stat-label">Total On Duty</span>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">📏</div>
-                <div className="stat-content">
-                  <span className="stat-value">
-                    {tripData.daily_logs?.reduce(
-                      (sum: number, log: any) => sum + log.total_miles,
-                      0
-                    )}
-                  </span>
-                  <span className="stat-label">Total Miles</span>
-                </div>
-              </div>
-            </div>
+        <div
+          id="overview-panel"
+          role="tabpanel"
+          aria-labelledby="overview-tab"
+          hidden={activeTab !== "overview"}
+        >
+          {activeTab === "overview" && (
+            <OverviewTab
+              tripData={tripData}
+              routeStats={routeStats!}
+              params={params}
+            />
+          )}
+        </div>
 
-            <div className="recent-logs">
-              <h4>📋 Recent Logs</h4>
-              <div className="logs-preview">
-                {tripData.daily_logs
-                  ?.slice(0, 3)
-                  .map((log: any, index: number) => (
-                    <div key={index} className="log-preview-item">
-                      <div className="log-preview-header">
-                        <span className="log-date">
-                          {new Date(log.log_date).toLocaleDateString()}
-                        </span>
-                        <span className="log-day">Day {log.day_number}</span>
-                      </div>
-                      <div className="log-preview-stats">
-                        <span>🚛 {log.total_driving_hours.toFixed(1)}h</span>
-                        <span>💼 {log.total_on_duty_hours.toFixed(1)}h</span>
-                        <span>📏 {log.total_miles} mi</span>
-                      </div>
-                    </div>
-                  ))}
-                {tripData.daily_logs && tripData.daily_logs.length > 3 && (
-                  <div className="view-all-logs">
-                    <Link
-                      to={`/trips/${params.id}/logs`}
-                      className="btn btn-outline btn-sm"
-                    >
-                      View All {tripData.daily_logs.length} Logs →
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        <div
+          id="route-panel"
+          role="tabpanel"
+          aria-labelledby="route-tab"
+          hidden={activeTab !== "route"}
+        >
+          {activeTab === "route" && (
+            <RouteTab trip={trip} routeStats={routeStats!} />
+          )}
+        </div>
 
-        {activeTab === "route" && (
-          <div className="route-content">
-            <div className="route-details-card">
-              <h4>🗺️ Route Information</h4>
-              <div className="route-info-grid">
-                <div className="route-info-item">
-                  <strong>Start Point:</strong>
-                  <span>{trip.current_location}</span>
-                </div>
-                <div className="route-info-item">
-                  <strong>End Point:</strong>
-                  <span>{trip.dropoff_location}</span>
-                </div>
-                <div className="route-info-item">
-                  <strong>Pickup Location:</strong>
-                  <span>{trip.pickup_location}</span>
-                </div>
-                <div className="route-info-item">
-                  <strong>Total Distance:</strong>
-                  <span>{trip.total_distance} miles</span>
-                </div>
-                <div className="route-info-item">
-                  <strong>Estimated Duration:</strong>
-                  <span>{trip.estimated_duration} hours</span>
-                </div>
-                {trip.route_summary && (
-                  <>
-                    <div className="route-info-item">
-                      <strong>Average Speed:</strong>
-                      <span>{trip.route_summary.average_speed} mph</span>
-                    </div>
-                    <div className="route-info-item">
-                      <strong>Fuel Stops:</strong>
-                      <span>
-                        {Math.ceil(trip.total_distance / 500)} planned
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "compliance" && (
-          <div className="compliance-content">
-            <div className="compliance-summary">
-              <h4>✅ Compliance Summary</h4>
-              <div className="compliance-stats">
-                <div className="compliance-stat compliant">
-                  <span className="stat-label">70-Hour Cycle</span>
-                  <span className="stat-value">Within Limits</span>
-                </div>
-                <div className="compliance-stat compliant">
-                  <span className="stat-label">Daily Driving</span>
-                  <span className="stat-value">Compliant</span>
-                </div>
-                <div className="compliance-stat compliant">
-                  <span className="stat-label">30-Minute Breaks</span>
-                  <span className="stat-value">Included</span>
-                </div>
-                <div className="compliance-stat compliant">
-                  <span className="stat-label">Rest Periods</span>
-                  <span className="stat-value">Adequate</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <div
+          id="compliance-panel"
+          role="tabpanel"
+          aria-labelledby="compliance-tab"
+          hidden={activeTab !== "compliance"}
+        >
+          {activeTab === "compliance" && compliance && (
+            <ComplianceTab compliance={compliance} />
+          )}
+        </div>
       </div>
     </div>
   );

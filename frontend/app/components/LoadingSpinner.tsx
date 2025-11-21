@@ -1,10 +1,12 @@
 import React from "react";
 
-const LoadingSpinner: React.FC = () => {
+const LoadingSpinner: React.FC<{ message?: string }> = ({
+  message = "Calculating route and generating ELD logs...",
+}) => {
   return (
     <div className="loading-spinner">
       <div className="spinner"></div>
-      <p>Calculating route and generating ELD logs...</p>
+      <p>{message}</p>
       <p className="loading-subtext">This may take a few moments</p>
     </div>
   );

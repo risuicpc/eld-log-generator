@@ -1,8 +1,9 @@
-import type { Route } from "./+types/home";
-import { useNavigate } from "react-router";
 import { useState } from "react";
-import type { TripFormData } from "~/services/api";
+import { useLoaderData, useNavigate } from "react-router";
 import TripForm from "~/components/TripForm";
+import { calculateTrip, getTrips, type TripFormData } from "~/services/api";
+import { formatDate, formatDurationHours } from "~/utils/timeUtils";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,39 +16,32 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+export async function clientLoader() {
+  try {
+    const tripsData = await getTrips();
+    return { tripsData };
+  } catch (error) {
+    console.error("Failed to load trips:", error);
+    return { tripsData: [] };
+  }
+}
+
+clientLoader.hydrate = true;
+
 export default function HomePage() {
   const navigate = useNavigate();
+  const { tripsData } = useLoaderData() as { tripsData: any[] };
   const [showTripForm, setShowTripForm] = useState(false);
+  const [posting, setPosting] = useState(false);
 
-  const exampleTrips = [
-    {
-      id: 1,
-      name: "NYC to Chicago Run",
-      from: "New York, NY",
-      to: "Chicago, IL",
-      distance: "790 miles",
-      duration: "16 hours",
-      date: "2024-01-15",
-    },
-    {
-      id: 2,
-      name: "West Coast Delivery",
-      from: "Los Angeles, CA",
-      to: "Seattle, WA",
-      distance: "1,135 miles",
-      duration: "19 hours",
-      date: "2024-01-12",
-    },
-    {
-      id: 3,
-      name: "Regional Haul",
-      from: "Dallas, TX",
-      to: "Houston, TX",
-      distance: "239 miles",
-      duration: "4 hours",
-      date: "2024-01-10",
-    },
-  ];
+  const formatDistance = (distance: string) => {
+    const num = parseFloat(distance);
+    return `${num.toFixed(0)} miles`;
+  };
+
+  const handleTripClick = (tripId: number) => {
+    navigate(`/trips/${tripId}`);
+  };
 
   const quickActions = [
     {
@@ -73,21 +67,27 @@ export default function HomePage() {
     },
   ];
 
-  const handleTripFormSubmit = (formData: TripFormData) => {
-    // Convert form data to URL parameters
-    const params = new URLSearchParams({
-      current_location: formData.currentLocation,
-      pickup_location: formData.pickupLocation,
-      dropoff_location: formData.dropoffLocation,
-      current_cycle_used: formData.currentCycleUsed.toString(),
-    });
-
-    // Navigate to calculate screen with parameters
-    navigate("/trips/calculate", {
-      state: { formData },
-      replace: true,
-    });
-    setShowTripForm(false);
+  const handleTripFormSubmit = async (formData: TripFormData) => {
+    console.log("Submitting trip form", formData);
+    try {
+      setPosting(true);
+      const params = {
+        current_location: formData.currentLocation,
+        pickup_location: formData.pickupLocation,
+        dropoff_location: formData.dropoffLocation,
+        current_cycle_used: formData.currentCycleUsed.toString(),
+      };
+      const result = await calculateTrip(params);
+      console.log(result);
+      navigate("/trips/calculate", {
+        state: { tripData: result },
+      });
+    } catch (err: any) {
+      console.log(err.message || "Failed to calculate trip");
+    } finally {
+      setPosting(false);
+      setShowTripForm(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -106,7 +106,7 @@ export default function HomePage() {
                 ×
               </button>
             </div>
-            <TripForm onSubmit={handleTripFormSubmit} />
+            <TripForm onSubmit={handleTripFormSubmit} posting={posting} />
           </div>
         </div>
       )}
@@ -152,23 +152,48 @@ export default function HomePage() {
       <section className="recent-trips">
         <h3>Recent Trips</h3>
         <div className="trips-list">
-          {exampleTrips.length > 0 ? (
-            exampleTrips.map((trip) => (
-              <div key={trip.id} className="trip-item">
+          {tripsData && tripsData.length > 0 ? (
+            tripsData.map((trip) => (
+              <div
+                key={trip.id}
+                className="trip-item"
+                onClick={() => handleTripClick(trip.id)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="trip-info">
-                  <h4>{trip.name}</h4>
+                  <h4>Trip #{trip.id}</h4>
                   <p>
-                    {trip.from} → {trip.to}
+                    {trip.current_location} → {trip.pickup_location} →{" "}
+                    {trip.dropoff_location}
                   </p>
                   <div className="trip-meta">
-                    <span>📏 {trip.distance}</span>
-                    <span>⏱️ {trip.duration}</span>
-                    <span>📅 {trip.date}</span>
+                    <span>📏 {formatDistance(trip.total_distance)}</span>
+                    <span>
+                      ⏱️{" "}
+                      {formatDurationHours(parseFloat(trip.estimated_duration))}
+                    </span>
+                    <span>📅 {formatDate(trip.created_at)}</span>
+                    <span>🔄 {trip.current_cycle_used} hrs used</span>
                   </div>
                 </div>
                 <div className="trip-actions">
-                  <button className="btn btn-outline btn-sm">View Logs</button>
-                  <button className="btn btn-secondary btn-sm">
+                  <button
+                    className="btn btn-outline btn-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTripClick(trip.id);
+                    }}
+                  >
+                    View Details
+                  </button>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add duplicate functionality here if needed
+                      console.log("Duplicate trip", trip.id);
+                    }}
+                  >
                     Duplicate
                   </button>
                 </div>

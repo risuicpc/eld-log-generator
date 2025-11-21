@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router";
 
 interface ErrorMessageProps {
   message: string;
@@ -16,8 +17,13 @@ const ErrorMessage: React.FC<ErrorMessageProps> = ({ message, onRetry }) => {
           Try Again
         </button>
       )}
+      <Link to="/" className="btn btn-primary">
+        ← Back to Home
+      </Link>
       <div className="error-help">
-        <p><strong>Tips:</strong></p>
+        <p>
+          <strong>Tips:</strong>
+        </p>
         <ul>
           <li>Check that all locations are entered correctly</li>
           <li>Ensure the backend server is running</li>

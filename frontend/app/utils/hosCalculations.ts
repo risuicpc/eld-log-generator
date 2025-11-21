@@ -1,3 +1,5 @@
+import type { ComplianceStatus, DailyLog, RouteStats } from "~/types/trip";
+
 export const HOS_RULES = {
   DAILY_DRIVING_LIMIT: 11,
   DUTY_WINDOW_LIMIT: 14,
@@ -65,5 +67,69 @@ export const validateDailySchedule = (activities: any[]) => {
       driving: totalDriving,
       onDuty: totalOnDuty,
     },
+  };
+};
+
+export const calculateCompliance = (logs: DailyLog[]): ComplianceStatus => {
+  const totalCycleUsed = logs.reduce((sum, log) => sum + log.cycle_used, 0);
+  const has30MinBreaks = logs.every((log) =>
+    log.activities.some(
+      (activity) =>
+        activity.status === "off_duty" && activity.duration_hours >= 0.5
+    )
+  );
+
+  const hasAdequateRest = logs.every((log) =>
+    log.activities.some(
+      (activity) =>
+        activity.status === "off_duty" && activity.duration_hours >= 10
+    )
+  );
+
+  return {
+    seventyHourCycle: {
+      status: totalCycleUsed <= 70 ? "compliant" : "violation",
+      message:
+        totalCycleUsed <= 70
+          ? "Within Limits"
+          : `Exceeded by ${(totalCycleUsed - 70).toFixed(1)} hours`,
+    },
+    dailyDriving: {
+      status: logs.every((log) => log.total_driving_hours <= 11)
+        ? "compliant"
+        : "violation",
+      message: logs.every((log) => log.total_driving_hours <= 11)
+        ? "Compliant"
+        : "Daily limit exceeded",
+    },
+    thirtyMinuteBreaks: {
+      status: has30MinBreaks ? "compliant" : "violation",
+      message: has30MinBreaks ? "Included" : "Missing breaks",
+    },
+    restPeriods: {
+      status: hasAdequateRest ? "compliant" : "violation",
+      message: hasAdequateRest ? "Adequate" : "Insufficient rest",
+    },
+  };
+};
+
+export const calculateRouteStats = (
+  logs: DailyLog[],
+  trip: any
+): RouteStats => {
+  const totalMiles = logs.reduce((sum, log) => sum + log.total_miles, 0);
+  const totalDrivingHours = logs.reduce(
+    (sum, log) => sum + log.total_driving_hours,
+    0
+  );
+  const averageSpeed =
+    totalDrivingHours > 0 ? totalMiles / totalDrivingHours : 0;
+
+  return {
+    totalMiles,
+    totalDrivingHours: totalDrivingHours.toFixed(1),
+    averageSpeed: averageSpeed.toFixed(1),
+    fuelStops: Math.ceil(totalMiles / 500),
+    totalDays: logs.length,
   };
 };

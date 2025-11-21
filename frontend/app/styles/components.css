@@ -459,6 +459,16 @@
   margin: 0 auto var(--space-4);
 }
 
+.loading {
+  border: 3px solid var(--gray-200);
+  border-top: 3px solid var(--primary-600);
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  animation: spin 1s linear infinite;
+  /* margin: 0 auto var(--space-4); */
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
