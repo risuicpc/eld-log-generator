@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigation } from "react-router";
+import { Link, useLoaderData, useNavigation } from "react-router";
+import { getTripLogs } from "~/services/api";
 import ELDLog from "../components/ELDLog";
 import ErrorMessage from "../components/ErrorMessage";
 import HosCompliance from "../components/HosCompliance";
@@ -12,12 +13,21 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "Calculate Trip - ELD Log Generator" }];
 }
 
+export async function clientLoader({ params }: { params: { id: string } }) {
+  try {
+    const tripData = await getTripLogs(params.id);
+    return { tripData };
+  } catch (error) {
+    console.error("Failed to load trips:", error);
+    return { tripData: [] };
+  }
+}
+
+clientLoader.hydrate = true;
+
 export default function TripCalculatePage() {
-  const location = useLocation();
   const navigation = useNavigation();
-  const [tripData] = useState<any>(location.state?.tripData);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { tripData } = useLoaderData() as { tripData: any };
   const [activeTab, setActiveTab] = useState("summary");
 
   const handlePrintLog = (logIndex: number) => {
@@ -59,17 +69,6 @@ export default function TripCalculatePage() {
     return (
       <div className="trip-calculate-page">
         <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="trip-calculate-page">
-        <ErrorMessage
-          message={error}
-          onRetry={() => window.location.reload()}
-        />
       </div>
     );
   }

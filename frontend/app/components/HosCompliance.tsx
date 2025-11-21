@@ -1,6 +1,5 @@
 import React from "react";
 import { HOS_RULES } from "../utils/hosCalculations";
-import { formatDurationHours } from "../utils/timeUtils";
 
 interface HosComplianceProps {
   compliance: any;

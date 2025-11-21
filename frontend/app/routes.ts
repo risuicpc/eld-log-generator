@@ -4,8 +4,5 @@ export default [
   index("routes/home.tsx"),
 
   // Trip routes
-  route("trips/calculate", "routes/trips.calculate.tsx"),
-  route("trips/:id", "routes/trips.$id.tsx", [
-    route("logs", "routes/trips.$id.logs.tsx"),
-  ]),
+  route("trips/:id", "routes/trips.calculate.tsx"),
 ] satisfies RouteConfig;

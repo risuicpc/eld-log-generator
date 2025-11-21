@@ -1,9 +1,7 @@
 @import "./components.css";
 @import "./eld-log.css";
 
-/* Modern CSS Variables */
 :root {
-  /* Colors */
   --primary-50: #f0f9ff;
   --primary-100: #e0f2fe;
   --primary-500: #0ea5e9;

@@ -68,13 +68,5 @@ export const getTripLogs = async (tripId: string): Promise<any> => {
   }
 };
 
-export const getHOSLimits = async (): Promise<any> => {
-  try {
-    const response = await api.get("/hos-rules/limits/");
-    return response.data;
-  } catch (error: any) {
-    throw new Error("Failed to fetch HOS limits");
-  }
-};
 
 export default api;

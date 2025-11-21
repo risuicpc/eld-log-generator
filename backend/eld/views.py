@@ -131,40 +131,69 @@ class TripViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['get'])
     def logs(self, request, pk=None):
-        """Get all logs for a specific trip"""
+        """Return logs using TripCalculationResponseSerializer format"""
         trip = self.get_object()
-        daily_logs = trip.daily_logs.all()
+        daily_logs = trip.daily_logs.all().order_by("day_number")
 
-        logs_data = []
-        for daily_log in daily_logs:
-            log_data = {
-                'id': daily_log.id,
-                'log_date': daily_log.log_date,
-                'day_number': daily_log.day_number,
-                'total_miles': daily_log.total_miles,
-                'driver_name': daily_log.driver_name,
-                'carrier_name': daily_log.carrier_name,
-                'vehicle_number': daily_log.vehicle_number,
-                'cycle_used': float(daily_log.cycle_used),
-                'total_driving_hours': float(daily_log.total_driving_hours),
-                'total_on_duty_hours': float(daily_log.total_on_duty_hours),
-                'total_off_duty_hours': float(daily_log.total_off_duty_hours),
-                'activities': []
-            }
+        # Build daily_schedules in the exact format required by DailyScheduleSerializer
+        daily_schedules = []
+        for log in daily_logs:
+            daily_schedules.append({
+                "day_number": log.day_number,
+                "date": str(log.log_date),
+                "total_driving_hours": float(log.total_driving_hours),
+                "total_on_duty_hours": float(log.total_on_duty_hours),
+                "total_off_duty_hours": float(log.total_off_duty_hours),
+                "breaks_needed": 0,  # logs do not store this; you can compute if needed
+                "estimated_distance": float(log.total_miles),
+                "activities": [
+                    {
+                        "start_time": ds.start_time.isoformat(),
+                        "end_time": ds.end_time.isoformat(),
+                        "status": ds.status,
+                        "location": ds.location,
+                        "description": ds.description,
+                        "duration_hours": float(ds.duration_hours),
+                    }
+                    for ds in log.duty_statuses.all()
+                ],
+                "hos_compliant": True,        # or compute if you want
+                "is_restart_day": False       # optional field
+            })
 
-            for duty_status in daily_log.duty_statuses.all():
-                log_data['activities'].append({
-                    'start_time': duty_status.start_time.isoformat(),
-                    'end_time': duty_status.end_time.isoformat(),
-                    'status': duty_status.status,
-                    'location': duty_status.location,
-                    'description': duty_status.description,
-                    'duration_hours': float(duty_status.duration_hours)
-                })
+        # Prepare route data based on the stored trip fields
+        route_data = {
+            "distance": float(trip.total_distance),
+            "duration": float(trip.estimated_duration),
+            "fuel_stops": 0,  # unless you calculate this
+            "geometry": trip.route_geometry or {},
+            "summary": trip.route_summary or {},
+        }
 
-            logs_data.append(log_data)
+        # Rebuild HOS compliance section
+        hos_compliance_check = {
+            "is_compliant": True,
+            "total_days": len(daily_schedules),
+            "total_driving_hours": float(sum(l.total_driving_hours for l in daily_logs)),
+            "total_on_duty_hours": float(sum(l.total_on_duty_hours for l in daily_logs)),
+            "cycle_used_end": float(trip.current_cycle_used) +
+            float(sum(l.total_on_duty_hours for l in daily_logs)),
+        }
 
-        return Response({'daily_logs': logs_data})
+        # Full response structure
+        response_data = {
+            "trip": TripSerializer(trip).data,
+            "route": route_data,
+            "daily_schedules": daily_schedules,
+            "total_days": len(daily_schedules),
+            "hos_compliance_check": hos_compliance_check,
+        }
+
+        # Validate using TripCalculationResponseSerializer
+        serializer = TripCalculationResponseSerializer(data=response_data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.validated_data)
 
 
 class HOSRulesViewSet(viewsets.ViewSet):
