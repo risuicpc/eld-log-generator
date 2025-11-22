@@ -13,116 +13,114 @@ const ELDLog: React.FC<ELDLogProps> = ({ dailyLog, logIndex, onPrint }) => {
   const totalOnDuty = calculateTotalHours(dailyLog.activities, "on_duty");
   const totalOffDuty = calculateTotalHours(dailyLog.activities, "off_duty");
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      off_duty: "#10b981",
-      sleeper_berth: "#3b82f6",
-      driving: "#ef4444",
-      on_duty: "#f59e0b",
-    };
-    return colors[status] || "#6b7280";
-  };
-
   return (
-    <div id={`eld-log-${logIndex}`} className="eld-log">
-      <div className="log-header">
-        <div className="log-title">
-          <h3>DRIVER&apos;S DAILY LOG</h3>
-          <span className="log-date">{formatDate(dailyLog.date)}</span>
+    <div id={`eld-log-${logIndex}`} className="eld-log-wrapper">
+      {/* Top Header */}
+      <div className="eld-header">
+        <div className="header-left">
+          <div className="dot-title">U.S. DEPARTMENT OF TRANSPORTATION</div>
+          <h2 className="main-title">DRIVER'S DAILY LOG</h2>
         </div>
-        <button onClick={onPrint} className="btn-print">
-          🖨️ Print Log
-        </button>
-      </div>
 
-      <div className="log-info-grid">
-        <div className="info-item">
-          <label>Driver</label>
-          <span className="info-value">John Doe</span>
-        </div>
-        <div className="info-item">
-          <label>Carrier</label>
-          <span className="info-value">ABC Trucking Co.</span>
-        </div>
-        <div className="info-item">
-          <label>Vehicle</label>
-          <span className="info-value">TRK-001</span>
-        </div>
-        <div className="info-item">
-          <label>Total Miles</label>
-          <span className="info-value">
-            {Math.round(dailyLog.estimated_distance)}
-          </span>
+        <div className="header-right">
+          <button onClick={onPrint} className="print-btn">
+            Print
+          </button>
         </div>
       </div>
 
-      <div className="log-totals">
-        <div className="total-item">
-          <span className="total-label">Driving</span>
-          <span className="total-value">{totalDriving.toFixed(1)}h</span>
+      {/* Sub Header */}
+      <div className="sub-header-grid">
+        <div className="sub-item">
+          <label>MONTH</label>
+          <span>{new Date(dailyLog.date).getMonth() + 1}</span>
         </div>
-        <div className="total-item">
-          <span className="total-label">On Duty</span>
-          <span className="total-value">{totalOnDuty.toFixed(1)}h</span>
+        <div className="sub-item">
+          <label>DAY</label>
+          <span>{new Date(dailyLog.date).getDate()}</span>
         </div>
-        <div className="total-item">
-          <span className="total-label">Off Duty</span>
-          <span className="total-value">{totalOffDuty.toFixed(1)}h</span>
+        <div className="sub-item">
+          <label>YEAR</label>
+          <span>{new Date(dailyLog.date).getFullYear()}</span>
         </div>
-        <div className="total-item">
-          <span className="total-label">Cycle Used</span>
-          <span className="total-value">
-            {dailyLog.total_on_duty_hours.toFixed(1)}h
-          </span>
+        <div className="sub-item">
+          <label>TRUCK / TRACTOR</label>
+          <span>350</span>
+        </div>
+        <div className="sub-item">
+          <label>MILES TODAY</label>
+          <span>{Math.round(dailyLog.estimated_distance)}</span>
         </div>
       </div>
 
+      {/* Carrier + Driver */}
+      <div className="carrier-driver-row">
+        <div className="carrier-block">
+          <label>NAME OF CARRIER / CONTRACTOR</label>
+          <div className="carrier-name">John Doe's Transportation</div>
+          <div className="carrier-city">Washington, D.C.</div>
+        </div>
+
+        <div className="driver-block">
+          <label>DRIVER'S NAME</label>
+          <div className="driver-name">John E. Doe</div>
+        </div>
+      </div>
+
+      {/* GRID SECTION */}
       <LogGrid activities={dailyLog.activities} />
 
-      <div className="log-remarks">
+      {/* Totals Section */}
+      <div className="totals-grid">
+        <div className="total-col">
+          <label>OFF DUTY</label>
+          <span>{totalOffDuty.toFixed(2)}</span>
+        </div>
+        <div className="total-col">
+          <label>SLEEPER</label>
+          <span>0.00</span>
+        </div>
+        <div className="total-col">
+          <label>DRIVING</label>
+          <span>{totalDriving.toFixed(2)}</span>
+        </div>
+        <div className="total-col">
+          <label>ON DUTY</label>
+          <span>{totalOnDuty.toFixed(2)}</span>
+        </div>
+        <div className="total-col total-hours">
+          <label>TOTAL HOURS</label>
+          <span>24</span>
+        </div>
+      </div>
+
+      {/* Remarks */}
+      <div className="remarks-section">
         <h4>REMARKS</h4>
-        <div className="remarks-content">
-          {dailyLog.activities.map((activity: any, index: number) => (
-            <div key={index} className="remark-entry">
-              <span className="remark-time">
-                {new Date(activity.start_time).toLocaleTimeString("en-US", {
+        <div className="remarks-grid">
+          {dailyLog.activities.map((a: any, i: number) => (
+            <div key={i} className="remark-row">
+              <div className="remark-time">
+                {new Date(a.start_time).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                   hour12: false,
                 })}
-              </span>
-              <span className="remark-location">{activity.location}:</span>
-              <span className="remark-description">{activity.description}</span>
-              <span
-                className="status-indicator"
-                style={{ backgroundColor: getStatusColor(activity.status) }}
-              ></span>
+              </div>
+              <div className="remark-text">{a.location}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="log-certification">
+      {/* Certification */}
+      <div className="cert-section">
         <p>I certify that these entries are true and correct:</p>
-        <div className="signature-line">
-          <span>Driver Signature: _________________________</span>
-          <span>Date: {dailyLog.date}</span>
+        <div className="cert-line">
+          Driver Signature: _________________________
         </div>
+        <div className="cert-line">Date: {formatDate(dailyLog.date)}</div>
       </div>
-
-      {dailyLog.is_restart_day && (
-        <div className="restart-notice">
-          <strong>🔄 34-HOUR RESTART DAY:</strong> No driving permitted. 34
-          consecutive hours off duty required to reset 70-hour cycle.
-        </div>
-      )}
-
-      {!dailyLog.hos_compliant && (
-        <div className="compliance-warning">
-          <strong>⚠️ HOS COMPLIANCE WARNING:</strong> This schedule may violate
-          Hours of Service regulations.
-        </div>
-      )}
     </div>
   );
 };

@@ -68,7 +68,6 @@ export default function HomePage() {
   ];
 
   const handleTripFormSubmit = async (formData: TripFormData) => {
-    console.log("Submitting trip form", formData);
     try {
       setPosting(true);
       const params = {
