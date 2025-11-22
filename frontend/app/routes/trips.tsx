@@ -2,6 +2,7 @@ import { useLoaderData, useNavigate } from "react-router";
 import { getTrips } from "~/services/api";
 import { formatDate, formatDurationHours } from "~/utils/timeUtils";
 import type { Route } from "./+types/home";
+import { sampleTripsData } from "~/utils/hosCalculations";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -39,15 +40,17 @@ export default function TripsPage() {
     navigate(`/trips/${tripId}`);
   };
 
+  const data = [...tripsData, ...sampleTripsData];
+
   return (
     <div className="home-page">
       {/* Recent Trips */}
       <section className="recent-trips">
         <h3>Trips</h3>
         <div className="trips-list">
-          {tripsData &&
-            tripsData.length > 0 &&
-            tripsData.map((trip) => (
+          {data &&
+            data.length > 0 &&
+            data.map((trip) => (
               <div
                 key={trip.id}
                 className="trip-item"

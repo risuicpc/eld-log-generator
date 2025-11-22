@@ -4,6 +4,7 @@ import TripForm from "~/components/TripForm";
 import { calculateTrip, getTrips, type TripFormData } from "~/services/api";
 import { formatDate, formatDurationHours } from "~/utils/timeUtils";
 import type { Route } from "./+types/home";
+import { sampleTripsData } from "~/utils/hosCalculations";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -79,7 +80,7 @@ export default function HomePage() {
       const result = await calculateTrip(params);
       handleTripClick(result.id);
     } catch (err: any) {
-      console.log(err.message || "Failed to calculate trip");
+      alert(err.message || "Failed to calculate trip");
     } finally {
       setPosting(false);
       setShowTripForm(false);
@@ -89,6 +90,8 @@ export default function HomePage() {
   const handleCloseModal = () => {
     setShowTripForm(false);
   };
+
+  const data = [...tripsData, ...sampleTripsData];
 
   return (
     <div className="home-page">
@@ -148,8 +151,8 @@ export default function HomePage() {
       <section className="recent-trips">
         <h3>Recent Trips</h3>
         <div className="trips-list">
-          {tripsData && tripsData.length > 0 ? (
-            tripsData.splice(0, 3).map((trip) => (
+          {data && data.length > 0 ? (
+            data.splice(0, 3).map((trip) => (
               <div
                 key={trip.id}
                 className="trip-item"

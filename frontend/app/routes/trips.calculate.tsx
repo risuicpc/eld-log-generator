@@ -8,6 +8,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import RouteMap from "../components/RouteMap";
 import TripSummary from "../components/TripSummary";
 import type { Route } from "./+types/trips.calculate";
+import { sampleTripDetails } from "~/utils/hosCalculations";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Calculate Trip - ELD Log Generator" }];
@@ -18,8 +19,11 @@ export async function clientLoader({ params }: { params: { id: string } }) {
     const tripData = await getTripLogs(params.id);
     return { tripData };
   } catch (error) {
-    console.error("Failed to load trips:", error);
-    return { tripData: [] };
+    const id = parseInt(params.id);
+    if (id > 0 && id < 6) {
+      return { tripData: sampleTripDetails[id as 1] };
+    }
+    return { tripData: {} };
   }
 }
 
