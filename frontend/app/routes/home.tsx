@@ -78,7 +78,7 @@ export default function HomePage() {
         current_cycle_used: formData.currentCycleUsed.toString(),
       };
       const result = await calculateTrip(params);
-      handleTripClick(result.trip.id);
+      handleTripClick(result.id);
     } catch (err: any) {
       console.log(err.message || "Failed to calculate trip");
     } finally {

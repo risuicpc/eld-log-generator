@@ -119,7 +119,10 @@ class TripViewSet(viewsets.ModelViewSet):
             response_serializer = TripCalculationResponseSerializer(
                 data=response_data)
             if response_serializer.is_valid():
-                return Response(response_serializer.validated_data)
+                response_data = response_serializer.data
+                response_data["id"] = trip.id  # add trip ID to the response
+
+                return Response(response_data)
             else:
                 return Response(response_serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -193,7 +196,7 @@ class TripViewSet(viewsets.ModelViewSet):
         serializer = TripCalculationResponseSerializer(data=response_data)
         serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.validated_data)
+        return Response(serializer.data)
 
 
 class HOSRulesViewSet(viewsets.ViewSet):

@@ -25,6 +25,7 @@ export interface FormData {
 }
 
 export interface TripData {
+  id: number;
   trip: any;
   route: any;
   daily_schedules: any[];
@@ -67,6 +68,5 @@ export const getTripLogs = async (tripId: string): Promise<any> => {
     throw new Error(error.response?.data?.error || "Failed to fetch trip logs");
   }
 };
-
 
 export default api;

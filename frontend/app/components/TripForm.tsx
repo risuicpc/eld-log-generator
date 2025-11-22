@@ -91,11 +91,6 @@ const TripForm: React.FC<TripFormProps> = ({ onSubmit, posting }) => {
 
   return (
     <div className="trip-form-container">
-      <div className="form-header">
-        <h2>Plan Your Trip</h2>
-        <p>Enter trip details to generate compliant ELD logs</p>
-      </div>
-
       <div className="example-trips">
         <h3>🚀 Quick Examples</h3>
         <div className="example-buttons">
