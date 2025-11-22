@@ -55,7 +55,7 @@ export default function HomePage() {
       title: "View Recent Trips",
       description: "Access your previously calculated trips and logs",
       icon: "📊",
-      action: () => console.log("View recent trips"),
+      action: () => navigate(`/trips`),
       color: "secondary",
     },
     {
@@ -149,7 +149,7 @@ export default function HomePage() {
         <h3>Recent Trips</h3>
         <div className="trips-list">
           {tripsData && tripsData.length > 0 ? (
-            tripsData.map((trip) => (
+            tripsData.splice(0, 3).map((trip) => (
               <div
                 key={trip.id}
                 className="trip-item"

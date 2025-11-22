@@ -7,3 +7,8 @@ export const HOS_RULES = {
   MIN_OFF_DUTY: 10,
   RESTART_HOURS: 34,
 };
+
+
+const sampleTripsData = [
+
+]
