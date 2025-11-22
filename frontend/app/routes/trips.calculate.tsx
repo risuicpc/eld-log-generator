@@ -32,33 +32,120 @@ export default function TripCalculatePage() {
 
   const handlePrintLog = (logIndex: number) => {
     const element = document.getElementById(`eld-log-${logIndex}`);
-    if (element) {
-      const printWindow = window.open("", "_blank");
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>ELD Log - ${tripData.daily_schedules[logIndex].date}</title>
-              <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .eld-log { border: 2px solid #000; padding: 20px; }
-                .log-header { text-align: center; margin-bottom: 20px; }
-                .log-grid { margin: 20px 0; }
-                .grid-row { display: flex; border-bottom: 1px solid #ccc; }
-                .grid-cell { flex: 1; padding: 5px; text-align: center; border-right: 1px solid #ccc; }
-                .grid-header { font-weight: bold; background: #f0f0f0; }
-                .active { background: #000; color: white; }
-              </style>
-            </head>
-            <body>
-              ${element.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-      }
-    }
+    if (!element) return;
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+    <html>
+      <head>
+        <title>ELD Log - ${tripData.daily_schedules[logIndex].date}</title>
+        <style>
+
+          body {
+            font-family: 'Times New Roman', serif;
+            margin: 20px;
+          }
+
+          /* OUTER WRAPPER */
+          .eld-graph-wrapper {
+            width: 100%;
+            border: 2px solid #000;
+            margin-top: 10px;
+          }
+
+          /* GRID LAYOUT */
+          .eld-graph-grid {
+            display: grid;
+            grid-template-rows: auto repeat(4, 40px);
+            border-left: 2px solid #000;
+            border-right: 2px solid #000;
+          }
+
+          /* HEADER */
+          .grid-header-row {
+            display: grid;
+            grid-template-columns: 90px repeat(24, 1fr);
+            border-bottom: 2px solid #000;
+            background: #f2f2f2;
+          }
+
+          .grid-header-left {
+            border-right: 2px solid #000;
+            padding: 4px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 12px;
+          }
+
+          .grid-hour-cell {
+            text-align: center;
+            font-size: 10px;
+            padding: 2px 0;
+            border-right: 1px solid #000;
+          }
+
+          /* DUTY ROWS */
+          .grid-data-row {
+            display: grid;
+            grid-template-columns: 90px repeat(24, 1fr);
+            border-bottom: 1px solid #000;
+          }
+
+          .grid-status-label {
+            border-right: 2px solid #000;
+            padding: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+          }
+
+          .grid-hour-block {
+            position: relative;
+            border-right: 1px solid #888;
+            height: 100%;
+          }
+
+          /* 12 & 24 thick markers */
+          .grid-hour-block:nth-child(13),
+          .grid-hour-block:nth-child(25) {
+            border-right: 2px solid #000 !important;
+          }
+
+          /* ACTIVITY COLORS */
+          .grid-cell-off-duty .graph-line {
+            background: #10b981;
+          }
+          .grid-cell-sleeper-berth .graph-line {
+            background: #3b82f6;
+          }
+          .grid-cell-driving .graph-line {
+            background: #ef4444;
+          }
+          .grid-cell-on-duty .graph-line {
+            background: #f59e0b;
+          }
+
+          .graph-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #000;
+          }
+
+        </style>
+      </head>
+      <body>
+        ${element.innerHTML}
+      </body>
+    </html>
+  `);
+
+    printWindow.document.close();
+    printWindow.print();
   };
 
   if (navigation.state === "loading") {
